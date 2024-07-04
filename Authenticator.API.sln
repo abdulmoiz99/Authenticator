@@ -5,6 +5,8 @@ VisualStudioVersion = 17.10.35013.160
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Authenticator.API", "Authenticator.API\Authenticator.API.csproj", "{571EB30C-777E-405D-82B8-8150535FDF23}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Authenticator", "Authenticator\Authenticator.csproj", "{0726DB4D-DA1C-4F1A-A0E9-0BFDDC4BD29A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{571EB30C-777E-405D-82B8-8150535FDF23}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{571EB30C-777E-405D-82B8-8150535FDF23}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{571EB30C-777E-405D-82B8-8150535FDF23}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0726DB4D-DA1C-4F1A-A0E9-0BFDDC4BD29A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0726DB4D-DA1C-4F1A-A0E9-0BFDDC4BD29A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0726DB4D-DA1C-4F1A-A0E9-0BFDDC4BD29A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0726DB4D-DA1C-4F1A-A0E9-0BFDDC4BD29A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
