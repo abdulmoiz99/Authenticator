@@ -7,9 +7,9 @@ namespace Authenticator.API.Controllers
     [ApiController]
     public class AuthenticatonController : ControllerBase
     {
-        private readonly GoogleAuthenticationService _authenticationService;
+        private readonly AuthenticationService _authenticationService;
 
-        public AuthenticatonController(GoogleAuthenticationService authenticationService)
+        public AuthenticatonController(AuthenticationService authenticationService)
         {
             _authenticationService = authenticationService;
         }
@@ -25,6 +25,18 @@ namespace Authenticator.API.Controllers
         public async Task<IActionResult> GoogleResponse()
         {
             var claims = await _authenticationService.GoogleResponse();
+            return new JsonResult(claims);
+        }
+        [HttpGet("github-login")]
+        public IActionResult GithbLogin()
+        {
+            var redirectUri = Url.Action("GithbResponse");
+            return _authenticationService.GithubLogin(redirectUri);
+        }
+        [HttpGet("github-response")]
+        public async Task<IActionResult> GithbResponse()
+        {
+            var claims = await _authenticationService.GitHubResponse();
             return new JsonResult(claims);
         }
     }
