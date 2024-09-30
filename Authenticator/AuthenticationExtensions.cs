@@ -1,20 +1,22 @@
-﻿using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
+﻿using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.Extensions.DependencyInjection;
 using Authenticator.Model.Common;
 using System.Net;
-using Microsoft.Extensions.Logging;
-using Authenticator.Services;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authentication.OAuth;
+using Microsoft.AspNetCore.Authentication;
+using System.Security.Claims;
+using Microsoft.Extensions.Options;
 
 namespace Authenticator
 {
     public static class AuthenticationExtensions
     {
-        public static IServiceCollection AddGoogleAuthentication(this IServiceCollection services, string clientId, string clientSecret)
+        public static IServiceCollection AddGoogleAndGithubAuthentication(this IServiceCollection services)
         {
             services.AddHttpContextAccessor();
-            services.AddScoped<GoogleAuthenticationService>(); // Ensure this line is present
+            services.AddScoped<Services.AuthenticationService>(); // Ensure this line is present
+
 
             services.AddAuthentication(options =>
             {
@@ -26,8 +28,12 @@ namespace Authenticator
             })
             .AddGoogle(options =>
             {
-                options.ClientId = clientId;
-                options.ClientSecret = clientSecret;
+                // Get the authentication settings from the DI container
+                var serviceProvider = services.BuildServiceProvider(); // Create a service provider to resolve IOptions
+                var settings = serviceProvider.GetRequiredService<IOptions<AuthenticationSettings>>().Value;
+
+                options.ClientId = settings.Google.ClientId;
+                options.ClientSecret = settings.Google.ClientSecret;
                 options.Events.OnRemoteFailure = async context =>
                 {
                     var response = new AutoResponseDto<string>
@@ -41,10 +47,45 @@ namespace Authenticator
                     context.Response.ContentType = "application/json";
                     context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
                     await context.Response.WriteAsJsonAsync(response);
-                    context.HandleResponse(); // Suppress the exception
+                    context.HandleResponse();
+                };
+            })
+            .AddOAuth("GitHub", options =>
+            {
+                // Get the GitHub settings from the DI container
+                var serviceProvider = services.BuildServiceProvider(); // Create a service provider to resolve IOptions
+                var settings = serviceProvider.GetRequiredService<IOptions<AuthenticationSettings>>().Value;
+
+                options.ClientId = settings.GitHub.ClientId;
+                options.ClientSecret = settings.GitHub.ClientSecret;
+                options.CallbackPath = new PathString("/api/authentication/github-response");
+
+                options.AuthorizationEndpoint = "https://github.com/login/oauth/authorize";
+                options.TokenEndpoint = "https://github.com/login/oauth/access_token";
+                options.UserInformationEndpoint = "https://api.github.com/user";
+
+                options.Scope.Add("user:email");
+
+                options.Events = new OAuthEvents
+                {
+                    OnCreatingTicket = async context =>
+                    {
+                        var request = new HttpRequestMessage(HttpMethod.Get, options.UserInformationEndpoint);
+                        request.Headers.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
+                        request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", context.AccessToken);
+
+                        var response = await context.Backchannel.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, context.HttpContext.RequestAborted);
+                        response.EnsureSuccessStatusCode();
+
+                        var userJson = await response.Content.ReadAsStringAsync();
+                        var user = System.Text.Json.JsonDocument.Parse(userJson);
+
+                        context.Identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, user.RootElement.GetString("id")));
+                        context.Identity.AddClaim(new Claim(ClaimTypes.Name, user.RootElement.GetString("name")));
+                        context.Identity.AddClaim(new Claim(ClaimTypes.Email, user.RootElement.GetString("blog")));
+                    }
                 };
             });
-
             return services;
         }
     }
