@@ -6,12 +6,13 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Authentication.OAuth;
 using Microsoft.AspNetCore.Authentication;
 using System.Security.Claims;
+using Microsoft.Extensions.Options;
 
 namespace Authenticator
 {
     public static class AuthenticationExtensions
     {
-        public static IServiceCollection AddGoogleAuthentication(this IServiceCollection services, string clientId, string clientSecret)
+        public static IServiceCollection AddGoogleAndGithubAuthentication(this IServiceCollection services)
         {
             services.AddHttpContextAccessor();
             services.AddScoped<Services.AuthenticationService>(); // Ensure this line is present
@@ -27,8 +28,12 @@ namespace Authenticator
             })
             .AddGoogle(options =>
             {
-                options.ClientId = clientId;
-                options.ClientSecret = clientSecret;
+                // Get the authentication settings from the DI container
+                var serviceProvider = services.BuildServiceProvider(); // Create a service provider to resolve IOptions
+                var settings = serviceProvider.GetRequiredService<IOptions<AuthenticationSettings>>().Value;
+
+                options.ClientId = settings.Google.ClientId;
+                options.ClientSecret = settings.Google.ClientSecret;
                 options.Events.OnRemoteFailure = async context =>
                 {
                     var response = new AutoResponseDto<string>
@@ -42,44 +47,45 @@ namespace Authenticator
                     context.Response.ContentType = "application/json";
                     context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
                     await context.Response.WriteAsJsonAsync(response);
-                    context.HandleResponse(); // Suppress the exception
+                    context.HandleResponse();
                 };
             })
-           .AddOAuth("GitHub", options =>
-           {
-               options.ClientId = "Ov23lipHpq3nb45mmJek"; // Use GitHub ClientId
-               options.ClientSecret = "1b1d7278907a1fb9e714728e0ef8a44d7de0f85b"; // Use GitHub ClientSecret
-               options.CallbackPath = new PathString("/api/authentication/github-response");
+            .AddOAuth("GitHub", options =>
+            {
+                // Get the GitHub settings from the DI container
+                var serviceProvider = services.BuildServiceProvider(); // Create a service provider to resolve IOptions
+                var settings = serviceProvider.GetRequiredService<IOptions<AuthenticationSettings>>().Value;
 
-               // GitHub OAuth endpoints
-               options.AuthorizationEndpoint = "https://github.com/login/oauth/authorize";
-               options.TokenEndpoint = "https://github.com/login/oauth/access_token";
-               options.UserInformationEndpoint = "https://api.github.com/user";
+                options.ClientId = settings.GitHub.ClientId;
+                options.ClientSecret = settings.GitHub.ClientSecret;
+                options.CallbackPath = new PathString("/api/authentication/github-response");
 
-               options.Scope.Add("user:email");
+                options.AuthorizationEndpoint = "https://github.com/login/oauth/authorize";
+                options.TokenEndpoint = "https://github.com/login/oauth/access_token";
+                options.UserInformationEndpoint = "https://api.github.com/user";
 
-               options.Events = new OAuthEvents
-               {
-                   OnCreatingTicket = async context =>
-                   {
-                       // Make a request to the GitHub user endpoint to retrieve additional user data
-                       var request = new HttpRequestMessage(HttpMethod.Get, options.UserInformationEndpoint);
-                       request.Headers.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
-                       request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", context.AccessToken);
+                options.Scope.Add("user:email");
 
-                       var response = await context.Backchannel.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, context.HttpContext.RequestAborted);
-                       response.EnsureSuccessStatusCode();
+                options.Events = new OAuthEvents
+                {
+                    OnCreatingTicket = async context =>
+                    {
+                        var request = new HttpRequestMessage(HttpMethod.Get, options.UserInformationEndpoint);
+                        request.Headers.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
+                        request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", context.AccessToken);
 
-                       var userJson = await response.Content.ReadAsStringAsync();
-                       var user = System.Text.Json.JsonDocument.Parse(userJson);
+                        var response = await context.Backchannel.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, context.HttpContext.RequestAborted);
+                        response.EnsureSuccessStatusCode();
 
-                       context.Identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, user.RootElement.GetString("id")));
-                       context.Identity.AddClaim(new Claim(ClaimTypes.Name, user.RootElement.GetString("name")));
-                       context.Identity.AddClaim(new Claim(ClaimTypes.Email, user.RootElement.GetString("blog")));
-                   }
-               };
-           });
+                        var userJson = await response.Content.ReadAsStringAsync();
+                        var user = System.Text.Json.JsonDocument.Parse(userJson);
 
+                        context.Identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, user.RootElement.GetString("id")));
+                        context.Identity.AddClaim(new Claim(ClaimTypes.Name, user.RootElement.GetString("name")));
+                        context.Identity.AddClaim(new Claim(ClaimTypes.Email, user.RootElement.GetString("blog")));
+                    }
+                };
+            });
             return services;
         }
     }
