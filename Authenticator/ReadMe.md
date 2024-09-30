@@ -28,6 +28,25 @@ You can add the library to your project by including it as a reference or by usi
 
 ## Configuration
 
+### Authentication Settings
+
+To configure authentication, add the following settings to your `appsettings.json` file:
+
+```json
+        {
+        "AuthenticationSettings": {
+            "Google": {
+                "ClientId": "your-google-client-id",
+                "ClientSecret": "your-google-client-secret"
+                },
+            "GitHub": {
+                "ClientId": "your-github-client-id",
+                "ClientSecret": "your-github-client-secret"
+                }
+            }
+        }
+```
+
 ### Google Authentication Setup
 
 To enable Google OAuth, follow these steps:
@@ -40,10 +59,11 @@ To enable Google OAuth, follow these steps:
 
 2. **Configure in Your App**:
 
-   In the `Startup.cs` or `Program.cs`, register the Google authentication with the required `clientId` and `clientSecret`:
+    In the S`Startup.cs` or `Program.cs`, register the Google authentication without the need for clientId and clientSecret parameters:
 
     ```csharp
-    services.AddGoogleAuthentication(Configuration["Google:ClientId"], Configuration["Google:ClientSecret"]);
+    builder.Services.Configure<AuthenticationSettings>(builder.Configuration.GetSection("AuthenticationSettings"));
+    builder.Services.AddGoogleAndGithubAuthentication();
     ```
 
 ### GitHub Authentication Setup
@@ -60,7 +80,8 @@ To enable GitHub OAuth:
    In the `Startup.cs` or `Program.cs`, register GitHub authentication as shown below:
 
     ```csharp
-    services.AddGoogleAuthentication(Configuration["GitHub:ClientId"], Configuration["GitHub:ClientSecret"]);
+    builder.Services.Configure<AuthenticationSettings>(builder.Configuration.GetSection("AuthenticationSettings"));
+    builder.Services.AddGoogleAndGithubAuthentication();
     ```
 
 ## Usage
