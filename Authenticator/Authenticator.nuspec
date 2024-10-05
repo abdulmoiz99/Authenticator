@@ -18,6 +18,12 @@
 			This library is designed to be a one-stop solution for adding authentication to your .NET applications.
 		</description>
 
+		<!-- Dependencies -->
+		<dependencies>
+			<dependency id="Microsoft.AspNetCore.Authentication.Google" version="8.0.6" />
+			<dependency id="Microsoft.Extensions.DependencyInjection" version="8.0.1" />
+		</dependencies>
+
 		<!-- Include the local Readme file -->
 		<readme>README.md</readme>
 
