@@ -2,7 +2,7 @@
 <package>
 	<metadata>
 		<id>Authenticator.OAuth</id>
-		<version>1.0.1</version>
+		<version>1.0.4</version>
 		<authors>Abdul Moiz</authors>
 		<requireLicenseAcceptance>false</requireLicenseAcceptance>
 
@@ -13,25 +13,29 @@
 		<repository type="git" url="https://github.com/abdulmoiz99/Authenticator" />
 
 		<description>
-			Authenticator OAuth Library is a .NET class library that simplifies the integration of OAuth-based authentication for multiple providers.
-			Currently, it supports **Google** and **GitHub** OAuth authentication, with plans to extend support to other OAuth providers like Facebook, Twitter, etc.
-			This library is designed to be a one-stop solution for adding authentication to your .NET applications.
+			Authenticator OAuth Library is a .NET class library that simplifies the integration of OAuth-based authentication for multiple providers. Currently, it supports Google and GitHub OAuth authentication, with plans to extend support to other OAuth providers like Mircosoft, Facebook, Twitter, etc. This library is designed to be a one-stop solution for adding authentication to your .NET applications.
 		</description>
-
-		<!-- Dependencies -->
-		<dependencies>
-			<dependency id="Microsoft.AspNetCore.Authentication.Google" version="8.0.6" />
-			<dependency id="Microsoft.Extensions.DependencyInjection" version="8.0.1" />
-		</dependencies>
 
 		<!-- Include the local Readme file -->
 		<readme>README.md</readme>
 
 		<!-- Tags (Optional) -->
 		<tags>OAuth Google GitHub Authentication .NET</tags>
+
+		<!-- Dependencies section -->
+		<dependencies>
+			<!-- Microsoft.AspNetCore.Authentication.Google dependency -->
+			<dependency id="Microsoft.AspNetCore.Authentication.Google" version="8.0.6" />
+			<!-- Add other dependencies as needed -->
+			<dependency id="Microsoft.Extensions.DependencyInjection.Abstractions" version="8.0.1" />
+		</dependencies>
 	</metadata>
 
 	<files>
+		<!-- Add the compiled assembly -->
+		<file src="bin/Release/net8.0/Authenticator.dll" target="lib/net8.0/" />
+
+		<!-- Include the README.md file -->
 		<file src="README.md" target="README.md" />
 	</files>
 </package>
