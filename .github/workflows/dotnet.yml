@@ -5,9 +5,13 @@ name: .NET
 
 on:
   push:
-    branches: [ "master", "develop" ]
+    branches: 
+      - "master"
+      - "develop"
   pull_request:
-    branches: [ "master", "develop" ]
+    branches: 
+      - "master"
+      - "develop"
 
 jobs:
   build:
@@ -21,8 +25,8 @@ jobs:
       with:
         dotnet-version: 8.0.x
     - name: Restore dependencies
-      run: dotnet restore
+      run: dotnet restore Authenticator.sln
     - name: Build
-      run: dotnet build --no-restore
+      run: dotnet build Authenticator.sln --no-restore
     - name: Test
-      run: dotnet test --no-build --verbosity normal
+      run: dotnet test Authenticator.sln --no-build --verbosity normal
