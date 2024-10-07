@@ -1,4 +1,4 @@
-# Authenticator OAuth Library
+﻿# Authenticator OAuth Library
 
 **Authenticator OAuth Library** is a .NET class library that simplifies the integration of OAuth-based authentication for multiple providers. Currently, it supports **Google** and **GitHub** OAuth authentication, with plans to extend support to other OAuth providers like Facebook, Twitter, etc. This library is designed to be a one-stop solution for adding authentication to your .NET applications.
 
