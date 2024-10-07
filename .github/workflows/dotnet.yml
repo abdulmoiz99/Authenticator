@@ -25,8 +25,8 @@ jobs:
       with:
         dotnet-version: 8.0.x
     - name: Restore dependencies
-      run: dotnet restore Authenticator.API.sln
+      run: dotnet restore Authenticator.sln
     - name: Build
-      run: dotnet build Authenticator.API.sln --no-restore
+      run: dotnet build Authenticator.sln --no-restore
     - name: Test
-      run: dotnet test Authenticator.API.sln --no-build --verbosity normal
+      run: dotnet test Authenticator.sln --no-build --verbosity normal
